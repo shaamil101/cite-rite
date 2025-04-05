@@ -28,6 +28,7 @@
 6. **Help Modal**  
    - Dialog explaining how to use the app, step-by-step
 
+### Potential improvements in NOTES.md!
 ## Use of AI
 
 ### Key AI tools used:
