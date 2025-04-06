@@ -280,7 +280,7 @@ export default function Home() {
         </div>
         <div className="py-6">
   <div className="flex items-center gap-2">
-    <h1 className="text-5xl font-bold text-gray-800">Graph View</h1>
+    <h1 className="text-3xl font-bold text-gray-800">Graph View</h1>
   </div>
 </div>
 
