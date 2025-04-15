@@ -8,7 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./component
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card"
 import { Progress } from "./components/ui/progress"
-import { HelpCircle, ExternalLink, ChevronDown } from "lucide-react"
+import { HelpCircle, ExternalLink, ChevronDown, CheckCircle, XCircle} from "lucide-react"
 import { WeekNumberLabel } from "react-day-picker";
 import Graphview from "@/app/graphview";
 
@@ -94,40 +94,36 @@ export default function Home() {
     Have an array of true/false to maintain verified or not for the claims
   */
 
-  const verifyClaims = () => {
+    const verifyClaims = () => {
+      const newVerified = [...verified];
+      
+      claims.forEach((claim, index) => {
+        newVerified[index] = verifyClaim(claim);
+      });
+      
+      setVerified(newVerified);
+    }
+  
 
-    claims.map(claim => {
-      verified[claims.indexOf(claim)] = verifyClaim(claim);
-
-    })
-
-  }
-
-  const verifyClaim = (claim: Claim):boolean => {
-
-    if(claim.relevant_citations.length>0)
-      return true;
-    else
-    {
-      if(claim.children_claim_ids.length==0)
-        return false;
-      else
-      {
-      let children = claim.children_claim_ids.length;
-      claim.children_claim_ids.map(claimid => {
-        const claimnum = parseInt(claimid, 10);
-        if(verifyClaim(claims[claimnum]))
-          children = children -1;
-      })
-      if(children===0)
+    const verifyClaim = (claim: Claim): boolean => {
+      if (claim.relevant_citations.length > 0)
         return true;
-      else
+      if (claim.children_claim_ids.length === 0)
         return false;
+      
+      let allChildrenVerified = true;
+      
+      claim.children_claim_ids.forEach(childId => {
+        const childIndex = parseInt(childId, 10);
+        if (childIndex >= 0 && childIndex < claims.length) {
+          if (!verifyClaim(claims[childIndex])) {
+            allChildrenVerified = false;
+          }
+        }
+      });
+      
+      return allChildrenVerified;
     }
-    
-    }
-
-  }
 
   // Scrolling to the claim's position in the text and highlighting it
   const scrollToClaimInText = (claim: Claim) => {
@@ -245,7 +241,22 @@ export default function Home() {
                 {claims.map((claim, index) => (
                   <Card key={`claim-${claim.start_index}-${claim.end_index}`} className="border border-gray-200">
                     <CardHeader className="pb-2 flex flex-row justify-between items-center">
-                      <CardTitle className="text-lg font-medium">Claim {index+1}</CardTitle>
+                    <div className="flex flex-col">
+                        <CardTitle className="text-lg font-medium">Claim {index+1}</CardTitle>
+                        <div className="flex items-center mt-1">
+                          {verified[index] ? (
+                            <div className="flex items-center text-green-600 text-sm">
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              <span>Verified</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center text-red-600 text-sm">
+                              <XCircle className="h-4 w-4 mr-1" />
+                              <span>Unverified</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                       <Button
                         variant="outline"
                         size="sm"
