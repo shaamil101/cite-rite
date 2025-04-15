@@ -61,6 +61,7 @@ export default function Home() {
   const [citations, setCitations] = useState<Citation[]>([])
   const [scanResult, setScanResult] = useState<string | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
+  const [verified, setVerified] = useState<boolean[]>([]);
 
   // Updating word count when text changes
   useEffect(() => {
@@ -78,10 +79,55 @@ export default function Home() {
     const data: Root = JSON.parse(scanResult);
     setClaims(Object.values(data.document.claims));
     setCitations(Object.values(data.document.citations));
-
+    verifyClaims();
     setIsAnalyzing(false);
   }
 
+  /*
+  Function - Find Verified Claims
+
+  input - Claims[]
+
+  1. Go through all of the claims, for each unverified claim, perform DFS and check if it is verified or not by going through children claims.
+  3. If it is verified, change every one of the visited unverified claims to verified.
+
+    Have an array of true/false to maintain verified or not for the claims
+  */
+
+  const verifyClaims = () => {
+
+    claims.map(claim => {
+      verified[claims.indexOf(claim)] = verifyClaim(claim);
+
+    })
+
+  }
+
+  const verifyClaim = (claim: Claim):boolean => {
+
+    if(claim.relevant_citations.length>0)
+      return true;
+    else
+    {
+      if(claim.children_claim_ids.length==0)
+        return false;
+      else
+      {
+      let children = claim.children_claim_ids.length;
+      claim.children_claim_ids.map(claimid => {
+        const claimnum = parseInt(claimid, 10);
+        if(verifyClaim(claims[claimnum]))
+          children = children -1;
+      })
+      if(children===0)
+        return true;
+      else
+        return false;
+    }
+    
+    }
+
+  }
 
   // Scrolling to the claim's position in the text and highlighting it
   const scrollToClaimInText = (claim: Claim) => {
